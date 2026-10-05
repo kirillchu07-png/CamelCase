@@ -15,7 +15,7 @@ public class ViewCommand implements InterfaceCommand {
     @Override
     public void execute() {
         String separator = File.separator;
-        String path = "src" + separator + "data" + separator + "profils.txt";
+        String path = "src" + separator + "data" + separator + "profils.json";
         File profils = new File(path);
         try {
             Scanner inputfile = new Scanner(profils);

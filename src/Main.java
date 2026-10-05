@@ -12,7 +12,6 @@ class main {
         InterfaceCommand startCommand = new StartCommand();
         InterfaceCommand helpCommand = new HelpCommand();
         InterfaceCommand viewCommand = new ViewCommand();
-
         if (command.equals(startCommand.getName())) {
             startCommand.execute();
         }

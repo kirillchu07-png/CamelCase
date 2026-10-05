@@ -10,6 +10,5 @@ public class HelpCommand implements InterfaceCommand {
         System.out.println("Доступные комманды:");
         System.out.println("/start-заполнение вашего профиля");
         System.out.println("/view-посмотреть анкеты всех пользователей");
-        System.out.println("/chearch- найти пользователя по имени (тк подбор пока не реалезован)");
     }
 }
