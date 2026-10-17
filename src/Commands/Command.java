@@ -1,6 +1,6 @@
 package Commands;
 
-public interface InterfaceCommand {
+public interface Command {
     String getName();
     void execute();
 }

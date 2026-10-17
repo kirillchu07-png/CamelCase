@@ -1,6 +1,6 @@
 package Commands;
 
-public class HelpCommand implements InterfaceCommand {
+public class HelpCommand implements Command {
     @Override
     public String getName(){
         return "/help";

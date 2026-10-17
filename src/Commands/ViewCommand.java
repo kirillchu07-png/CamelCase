@@ -1,12 +1,12 @@
 package Commands;
 
-import Commands.InterfaceCommand;
+import Commands.Command;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
-public class ViewCommand implements InterfaceCommand {
+public class ViewCommand implements Command {
     @Override
     public String getName() {
         return "/view";

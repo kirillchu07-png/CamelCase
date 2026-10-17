@@ -1,5 +1,5 @@
 import Commands.HelpCommand;
-import Commands.InterfaceCommand;
+import Commands.Command;
 import Commands.StartCommand;
 import Commands.ViewCommand;
 
@@ -9,9 +9,9 @@ class main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         String command = scanner.nextLine();
-        InterfaceCommand startCommand = new StartCommand();
-        InterfaceCommand helpCommand = new HelpCommand();
-        InterfaceCommand viewCommand = new ViewCommand();
+        Command startCommand = new StartCommand();
+        Command helpCommand = new HelpCommand();
+        Command viewCommand = new ViewCommand();
         if (command.equals(startCommand.getName())) {
             startCommand.execute();
         }
