@@ -3,7 +3,9 @@ package Commands;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-
+import model.AnketaParser;
+import model.ConsoleReader;
+import model.JsonWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -16,7 +18,6 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class StartCommand implements InterfaceCommand {
-
     @Override
     public String getName() {
         return "/start";
@@ -26,104 +27,84 @@ public class StartCommand implements InterfaceCommand {
     public void execute() {
 
         String separator = File.separator;
+        String pathResources="src" + separator + "resources" + separator;
+        String pathAnketa1 = pathResources + "anketa1.txt";
 
-        String pathAnketa = "src" + separator + "data" + separator + "anketa.txt";
-        String pathProfils = "src" + separator + "data" + separator + "profils.json";
+        String pathAnketa2 = pathResources + "anketa2.txt";
 
-        File anketa = new File(pathAnketa);
-        File profils = new File(pathProfils);
+        String pathProfils = pathResources + "profils.json";
+
+        ConsoleReader console = new ConsoleReader();
+        JsonWriter jsonWriter = new JsonWriter();
+
+        Map<String, String> answers = new LinkedHashMap<>();
+
+        int questionNumber = 0;
 
         try {
 
-            Scanner inputFile = new Scanner(anketa);
-            Scanner console = new Scanner(System.in);
+            String[] files = {pathAnketa1, pathAnketa2};
 
-            Map<String, String> answers = new LinkedHashMap<>();
+            for (String path : files) {
 
-            int questionNumber = 0;
+                AnketaParser parser = new AnketaParser(path);
 
-            while (inputFile.hasNextLine()) {
+                try {
 
-                String inputLine = inputFile.nextLine();
+                    while (parser.hasNextLine()) {
 
-                if (inputLine.equals("Давай создадим тебе профиль!!!")) {
-                    continue;
-                }
+                        String inputLine = parser.nextLine();
 
-                if (inputLine.equals("Теперь я задам тебе несколько вопросов по которым я смогу(ну прям сейчас не смогу) подобрать тебе партнера!!!")) {
-                    continue;
-                }
+                        if (inputLine.equals("Давай создадим тебе профиль!!!")) {
+                            continue;
+                        }
 
-                if (inputLine.equals("4. Потом сюда добавим возможность загружать фото.")) {
-                    continue;
-                }
+                        if (inputLine.equals("Теперь я задам тебе несколько вопросов по которым я смогу(ну прям сейчас не смогу) подобрать тебе партнера!!!")) {
+                            continue;
+                        }
 
-                System.out.println(inputLine);
+                        if (inputLine.equals("4. Потом сюда добавим возможность загружать фото.")) {
+                            continue;
+                        }
 
-                String answer = console.nextLine();
+                        System.out.println(inputLine);
 
-                if (inputLine.equals("1. Как тебя зовут?")) {
-                    answers.put("name", answer);
+                        String answer = console.readLine();
 
-                } else if (inputLine.equals("2. Какого вы пола пол М/Ж?")) {
-                    answers.put("age", answer);
+                        if (inputLine.equals("1. Как тебя зовут?")) {
 
-                } else if (inputLine.equals("3. Скажите пару слов о себе.")) {
-                    answers.put("information", answer);
+                            answers.put("name", answer);
 
-                } else {
+                        } else if (inputLine.equals("2. Какого вы пола пол М/Ж?")) {
 
-                    questionNumber++;
+                            answers.put("age", answer);
 
-                    answers.put(String.valueOf(questionNumber), answer);
-                }
-            }
+                        } else if (inputLine.equals("3. Скажите пару слов о себе.")) {
 
-            Gson gson = new GsonBuilder()
-                    .setPrettyPrinting()
-                    .create();
+                            answers.put("information", answer);
 
-            List<Map<String, String>> profilsList = new ArrayList<>();
+                        } else {
 
-            if (profils.exists() && profils.length() > 0) {
+                            questionNumber++;
 
-                Scanner jsonReader = new Scanner(profils);
-                StringBuilder json = new StringBuilder();
+                            answers.put(String.valueOf(questionNumber), answer);
+                        }
+                    }
 
-                while (jsonReader.hasNextLine()) {
-                    json.append(jsonReader.nextLine());
-                }
-
-                jsonReader.close();
-
-                Type type = new TypeToken<List<Map<String, String>>>() {}.getType();
-
-                List<Map<String, String>> oldProfils =
-                        gson.fromJson(json.toString(), type);
-
-                if (oldProfils != null) {
-                    profilsList.addAll(oldProfils);
+                } finally {
+                    parser.close();
                 }
             }
 
-            profilsList.add(answers);
-
-            FileWriter writer = new FileWriter(profils);
-
-            gson.toJson(profilsList, writer);
-
-            writer.close();
-            inputFile.close();
+            jsonWriter.save(answers, pathProfils);
 
             System.out.println("Профиль успешно сохранён!");
 
-        } catch (FileNotFoundException e) {
-
-            System.out.println("Файл не найден");
-
         } catch (IOException e) {
 
-            System.out.println("Ошибка при записи файла");
+            System.out.println("Ошибка при работе с файлом: "
+                    + e.getMessage());
         }
     }
+
 }
