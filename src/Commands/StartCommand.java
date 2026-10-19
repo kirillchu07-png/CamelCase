@@ -6,6 +6,7 @@ import com.google.gson.reflect.TypeToken;
 import model.AnketaParser;
 import model.ConsoleReader;
 import model.JsonWriter;
+import model.ConsoleWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -35,6 +36,7 @@ public class StartCommand implements Command {
         String pathProfils = pathResources + "profils.json";
 
         ConsoleReader console = new ConsoleReader();
+        ConsoleWriter print = new ConsoleWriter();
         JsonWriter jsonWriter = new JsonWriter();
 
         Map<String, String> answers = new LinkedHashMap<>();
@@ -52,9 +54,8 @@ public class StartCommand implements Command {
                 try {
 
                     while (parser.hasNextLine()) {
-
                         String inputLine = parser.nextLine();
-
+                        print.output(inputLine);
                         if (inputLine.equals("Давай создадим тебе профиль!!!")) {
                             continue;
                         }
@@ -67,7 +68,6 @@ public class StartCommand implements Command {
                             continue;
                         }
 
-                        System.out.println(inputLine);
 
                         String answer = console.readLine();
 

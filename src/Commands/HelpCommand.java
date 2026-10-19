@@ -1,5 +1,5 @@
 package Commands;
-
+import model.ConsoleWriter;
 public class HelpCommand implements Command {
     @Override
     public String getName(){
@@ -7,8 +7,9 @@ public class HelpCommand implements Command {
     }
     @Override
     public void execute(){
-        System.out.println("Доступные команды:");
-        System.out.println("/start-заполнение вашего профиля");
-        System.out.println("/view-посмотреть анкеты всех пользователей");
+        ConsoleWriter print = new ConsoleWriter();
+        print.output("Доступные команды:");
+        print.output("/start-заполнение вашего профиля");
+        print.output("/view-посмотреть анкеты всех пользователей");
     }
 }
