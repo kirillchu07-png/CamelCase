@@ -10,15 +10,15 @@ public class CommandDispatcher {
     private final Map<String, Command> commands =
             new HashMap<>();
 
-    private final StartCommand startCommand;
+    private final Map<String, Command> activeCommands =
+            new HashMap<>();
+
     private final ConsoleWriter print;
 
     public CommandDispatcher(
             List<Command> commandList,
-            StartCommand startCommand,
             ConsoleWriter print) {
 
-        this.startCommand = startCommand;
         this.print = print;
 
         for (Command command : commandList) {
@@ -34,15 +34,28 @@ public class CommandDispatcher {
 
         if (commands.containsKey(text)) {
 
-            commands.get(text).execute(userId, print);
+            Command command = commands.get(text);
+
+            activeCommands.remove(userId);
+            command.execute(userId, print);
+
+            if (command.hasSession(userId)) {
+                activeCommands.put(userId, command);
+            }
 
         } else if (text.startsWith("/")) {
 
             print.output(userId, "Команда не найдена");
 
-        } else if (startCommand.hasSession(userId)) {
+        } else if (activeCommands.containsKey(userId)) {
 
-            startCommand.handleAnswer(userId, text, print);
+            Command command = activeCommands.get(userId);
+
+            command.handleAnswer(userId, text, print);
+
+            if (!command.hasSession(userId)) {
+                activeCommands.remove(userId);
+            }
 
         } else {
 
@@ -50,4 +63,5 @@ public class CommandDispatcher {
                     "Отправь /start для заполнения анкеты");
         }
     }
+
 }

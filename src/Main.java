@@ -44,7 +44,6 @@ class Main {
         CommandDispatcher dispatcher =
                 new CommandDispatcher(
                         commands,
-                        startCommand,
                         print
                 );
 
