@@ -1,7 +1,7 @@
 package model;
 
-public class ConsoleWriter {
-    public void output(String string) {
-        System.out.println(string);
-    }
+public interface ConsoleWriter {
+    void output(String userId, String text)
+            throws Exception;
+
 }

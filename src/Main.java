@@ -1,29 +1,75 @@
-import Commands.HelpCommand;
 import Commands.Command;
 import Commands.StartCommand;
-import Commands.ViewCommand;
+import Commands.HelpCommand;
+import core.CommandDispatcher;
+import model.ConsoleReader;
+import model.ConsoleWriter;
+import model.IncomingMessage;
+import telegram.TelegramApiClient;
+import telegram.TelegramReader;
+import telegram.TelegramWriter;
+import java.util.List;
+class Main {
+    public static void main(String[] args)
+            throws Exception {
 
-import java.util.Scanner;
+        String token = System.getenv("BOT_TOKEN");
 
-class main {
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        String command = scanner.nextLine();
-        Command startCommand = new StartCommand();
-        Command helpCommand = new HelpCommand();
-        Command viewCommand = new ViewCommand();
-        if (command.equals(startCommand.getName())) {
-            startCommand.execute();
+        if (token == null || token.isBlank()) {
+            throw new IllegalStateException(
+                    "Не указан BOT_TOKEN"
+            );
         }
-        else if (command.equals(helpCommand.getName())) {
-            helpCommand.execute();
+
+        TelegramApiClient api =
+                new TelegramApiClient(token);
+
+        ConsoleReader console =
+                new TelegramReader(api);
+
+        ConsoleWriter print =
+                new TelegramWriter(api);
+
+        StartCommand startCommand =
+                new StartCommand();
+
+        HelpCommand helpCommand =
+                new HelpCommand();
+
+        List<Command> commands = List.of(
+                startCommand,
+                helpCommand
+        );
+
+        CommandDispatcher dispatcher =
+                new CommandDispatcher(
+                        commands,
+                        startCommand,
+                        print
+                );
+
+        System.out.println("Telegram-бот запущен!");
+
+        while (true) {
+
+            try {
+
+                IncomingMessage message =
+                        console.readLine();
+
+                dispatcher.dispatch(message);
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
         }
-        else if (command.equals(viewCommand.getName())) {
-            viewCommand.execute();
-        }
-        else {
-            System.out.println("Команда не найдена");
-        }
-        scanner.close();
     }
 }
