@@ -1,110 +1,162 @@
 package Commands;
+import model.*;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-import model.AnketaParser;
-import model.ConsoleReader;
-import model.JsonWriter;
-import model.ConsoleWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 public class StartCommand implements Command {
+    private final Map<String, UserSession> sessions =
+            new HashMap<>();
+
+    private final List<String> questions =
+            new ArrayList<>();
+
+    private final JsonWriter jsonWriter = new JsonWriter();
+
+    private final String separator = File.separator;
+
+    private final String pathResources =
+            "src" + separator + "resources" + separator;
+
+    private final String pathProfils =
+            pathResources + "profils.json";
+
+    public StartCommand() throws IOException {
+
+        String pathAnketa1 = pathResources + "anketa1.txt";
+        String pathAnketa2 = pathResources + "anketa2.txt";
+
+        String[] files = {pathAnketa1, pathAnketa2};
+
+        for (String path : files) {
+
+            AnketaParser parser = new AnketaParser(path);
+
+            try {
+                while (parser.hasNextLine()) {
+
+                    String inputLine = parser.nextLine();
+
+                    if (inputLine.isBlank()) {
+                        continue;
+                    }
+
+                    if (inputLine.equals(
+                            "Давай создадим тебе профиль!!!")) {
+                        continue;
+                    }
+
+                    if (inputLine.equals(
+                            "Теперь я задам тебе несколько вопросов по которым я смогу(ну прям сейчас не смогу) подобрать тебе партнера!!!")) {
+                        continue;
+                    }
+
+                    if (inputLine.equals(
+                            "5. Потом сюда добавим возможность загружать фото.")) {
+                        continue;
+                    }
+
+                    questions.add(inputLine);
+                }
+
+            } finally {
+                parser.close();
+            }
+        }
+    }
+
     @Override
     public String getName() {
         return "/start";
     }
 
     @Override
-    public void execute() {
+    public void execute(String userId, ConsoleWriter print)
+            throws Exception {
 
-        String separator = File.separator;
-        String pathResources="src" + separator + "resources" + separator;
-        String pathAnketa1 = pathResources + "anketa1.txt";
-
-        String pathAnketa2 = pathResources + "anketa2.txt";
-
-        String pathProfils = pathResources + "profils.json";
-
-        ConsoleReader console = new ConsoleReader();
-        ConsoleWriter print = new ConsoleWriter();
-        JsonWriter jsonWriter = new JsonWriter();
-
-        Map<String, String> answers = new LinkedHashMap<>();
-
-        int questionNumber = 0;
-
-        try {
-
-            String[] files = {pathAnketa1, pathAnketa2};
-
-            for (String path : files) {
-
-                AnketaParser parser = new AnketaParser(path);
-
-                try {
-
-                    while (parser.hasNextLine()) {
-                        String inputLine = parser.nextLine();
-                        print.output(inputLine);
-                        if (inputLine.equals("Давай создадим тебе профиль!!!")) {
-                            continue;
-                        }
-
-                        if (inputLine.equals("Теперь я задам тебе несколько вопросов по которым я смогу(ну прям сейчас не смогу) подобрать тебе партнера!!!")) {
-                            continue;
-                        }
-
-                        if (inputLine.equals("4. Потом сюда добавим возможность загружать фото.")) {
-                            continue;
-                        }
-
-
-                        String answer = console.readLine();
-
-                        if (inputLine.equals("1. Как тебя зовут?")) {
-
-                            answers.put("name", answer);
-
-                        } else if (inputLine.equals("2. Какого вы пола пол М/Ж?")) {
-
-                            answers.put("age", answer);
-
-                        } else if (inputLine.equals("3. Скажите пару слов о себе.")) {
-
-                            answers.put("information", answer);
-
-                        } else {
-
-                            questionNumber++;
-
-                            answers.put(String.valueOf(questionNumber), answer);
-                        }
-                    }
-
-                } finally {
-                    parser.close();
-                }
-            }
-
-            jsonWriter.save(answers, pathProfils);
-
-            System.out.println("Профиль успешно сохранён!");
-
-        } catch (IOException e) {
-
-            System.out.println("Ошибка при работе с файлом: "
-                    + e.getMessage());
+        if (questions.isEmpty()) {
+            print.output(userId, "Вопросы не найдены!");
+            return;
         }
+
+        sessions.put(userId, new UserSession());
+
+        print.output(userId,
+                "Давай создадим тебе профиль!!!");
+
+        print.output(userId, questions.get(0));
     }
+
+    public boolean hasSession(String userId) {
+        return sessions.containsKey(userId);
+    }
+
+    public void handleAnswer(
+            String userId,
+            String answer,
+            ConsoleWriter print) throws Exception {
+
+        UserSession session = sessions.get(userId);
+
+        if (session == null) {
+            print.output(userId, "Сначала отправь /start");
+            return;
+        }
+
+        int index = session.getQuestionIndex();
+
+        String inputLine = questions.get(index);
+
+        if (inputLine.equals("1. Как тебя зовут?")) {
+            session.getAnswers().put("id", userId);
+            session.getAnswers().put("name", answer);
+
+        } else if (inputLine.equals(
+                "2. Какого вы пола пол М/Ж?")) {
+
+            session.getAnswers().put("gender", answer);
+
+        } else if (inputLine.equals(
+                "3. Сколько вам лет?")) {
+
+            session.getAnswers().put("age", answer);
+
+        } else if (inputLine.equals(
+                "4. Скажите пару слов о себе.")) {
+
+            session.getAnswers().put("information", answer);
+
+        } else {
+
+            int number = session.nextQuestionNumber();
+
+            session.getAnswers().put(
+                    String.valueOf(number), answer);
+        }
+
+        session.nextQuestion();
+
+        if (session.getQuestionIndex() >= questions.size()) {
+
+            jsonWriter.save(
+                    session.getAnswers(),
+                    pathProfils
+            );
+
+            sessions.remove(userId);
+
+            print.output(userId,
+                    "Профиль успешно сохранён!");
+
+            return;
+        }
+
+        print.output(
+                userId,
+                questions.get(session.getQuestionIndex())
+        );
+    }
+
 
 }
