@@ -1,5 +1,6 @@
 package Commands;
 import model.*;
+import resources.Paths;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,18 +15,14 @@ public class StartCommand implements Command {
 
     private final JsonWriter jsonWriter = new JsonWriter();
 
-    private final String separator = File.separator;
-
-    private final String pathResources =
-            "src" + separator + "resources" + separator;
 
     private final String pathProfils =
-            pathResources + "profils.json";
+            Paths.PATH_RESOURCES + "profils.json";
 
     public StartCommand() throws IOException {
 
-        String pathAnketa1 = pathResources + "anketa1.txt";
-        String pathAnketa2 = pathResources + "anketa2.txt";
+        String pathAnketa1 = Paths.PATH_RESOURCES + "anketa1.txt";
+        String pathAnketa2 = Paths.PATH_RESOURCES + "anketa2.txt";
 
         String[] files = {pathAnketa1, pathAnketa2};
 

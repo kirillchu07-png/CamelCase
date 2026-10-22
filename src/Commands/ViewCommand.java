@@ -9,6 +9,7 @@ import model.ConsoleWriter;
 import model.Match;
 import model.ProfileFinder;
 import model.ViewSession;
+import resources.Paths;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,8 +23,7 @@ import java.util.Map;
 public class ViewCommand implements Command {
 
     private final String pathProfils =
-            "src" + File.separator
-                    + "resources" + File.separator
+            Paths.PATH_RESOURCES
                     + "profils.json";
 
     private final ProfileFinder profileFinder;
